@@ -1,32 +1,20 @@
 name: check-pass
-
-on:
+'on':
   pull_request:
-    types: [labeled, unlabeled, assigned, unassigned, opened, synchronize]
-
+    types:
+    - labeled
+    - unlabeled
+    - assigned
+    - unassigned
+    - opened
+    - synchronize
 jobs:
   checkPass:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Check labels
-        uses: docker://agilepathway/pull-request-label-checker:v1.0.104
-        with:
-          one_of: e2e-run
-          none_of: failed
-          repo_token: ${{secrets.TAO_PTO}}
-
-  # checkPass:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: check do not merge
-  #       uses: mheap/github-action-required-labels@v1
-  #       with:
-  #         mode: exactly
-  #         count: 0
-  #         labels: "do not merge"
-  #     - name: check merge
-  #       uses: mheap/github-action-required-labels@v1
-  #       with:
-  #         mode: minimum
-  #         count: 1
-  #         labels: "e2e-run, e2e-full-test"
+    - name: Check labels
+      uses: docker://agilepathway/pull-request-label-checker:v1.0.104
+      with:
+        one_of: e2e-run
+        none_of: failed
+        repo_token: ${{secrets.TAO_PTO}}
