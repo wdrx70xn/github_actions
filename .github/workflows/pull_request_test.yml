@@ -1,106 +1,101 @@
 name: pull_request_test
-on:
-  workflow_dispatch:
-
+'on':
+  workflow_dispatch: null
 env:
   RUN_FORK_GLOBAL: ${{github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name}}
-
 jobs:
   duplicate_runs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Skip duplicate runs
-    env: 
+    env:
       RUN_FORK: ${{github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name}}
     outputs:
-      should_skip: |
-        ${{ env.RUN_FORK_GLOBAL == 'true' && github.event_name == 'pull_request'  || 
-         env.RUN_FORK_GLOBAL == 'false' && github.event_name == 'pull_request_target' }}
+      should_skip: "${{ env.RUN_FORK_GLOBAL == 'true' && github.event_name == 'pull_request'\
+        \  || \n env.RUN_FORK_GLOBAL == 'false' && github.event_name == 'pull_request_target'\
+        \ }}\n"
     steps:
-     -
-      name: skip_check
+    - name: skip_check
       id: skip_check
-      run: |
-        fork=${{github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name}}
-        echo "IS_FROM_FORK=${fork}" >> $GITHUB_ENV
-        if [ ${fork} == 'true' ]; then
-          skip=${{ github.event_name == 'pull_request' }}
-        else
-          skip=${{ github.event_name == 'pull_request_target' }}
-        fi
-        echo "should_skip=${skip}" >> $GITHUB_OUTPUT
-        echo "is fork ${fork}"
-        echo "should_skip ${skip}"
+      run: "fork=${{github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name}}\n\
+        echo \"IS_FROM_FORK=${fork}\" >> $GITHUB_ENV\nif [ ${fork} == 'true' ]; then\n\
+        \  skip=${{ github.event_name == 'pull_request' }}\nelse\n  skip=${{ github.event_name\
+        \ == 'pull_request_target' }}\nfi\necho \"should_skip=${skip}\" >> $GITHUB_OUTPUT\n\
+        echo \"is fork ${fork}\"\necho \"should_skip ${skip}\"\n"
   job1:
     name: checkout to ref
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: duplicate_runs
     steps:
-      -
-        name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      -
-        name: run
-        if: success()
-        run: |
-          echo "${{needs.duplicate_runs.outputs.should_skip}}"
-          echo "${{needs.duplicate_runs.outputs.should_skip != 'true'}}"
-          echo "pull request event name: ${{ github.event_name }}"
-          echo "head full name: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "base full name: ${{ github.event.pull_request.base.repo.full_name }}"      
-          echo "head full name: ${{ github.head.repo.full_name }}"
-          echo "base full name: ${{ github.base.repo.full_name }}"
-          echo "github.ref: ${{  github.ref }}"
-          echo "this is in main branch"
-          
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: run
+      if: success()
+      run: "echo \"${{needs.duplicate_runs.outputs.should_skip}}\"\necho \"${{needs.duplicate_runs.outputs.should_skip\
+        \ != 'true'}}\"\necho \"pull request event name: ${{ github.event_name }}\"\
+        \necho \"head full name: ${{ github.event.pull_request.head.repo.full_name\
+        \ }}\"\necho \"base full name: ${{ github.event.pull_request.base.repo.full_name\
+        \ }}\"      \necho \"head full name: ${{ github.head.repo.full_name }}\"\n\
+        echo \"base full name: ${{ github.base.repo.full_name }}\"\necho \"github.ref:\
+        \ ${{  github.ref }}\"\necho \"this is in main branch\"\n"
   job2:
-    name: checkout 
-    runs-on: ubuntu-20.04
+    name: checkout
+    runs-on: ubuntu-latest
     needs: duplicate_runs
-    if: | 
-      needs.duplicate_runs.outputs.should_skip != 'true' 
+    if: "needs.duplicate_runs.outputs.should_skip != 'true' \n"
     steps:
-      -
-        name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      -
-        name: run
-        if: success()
-        run: |
-          echo "pull request event name: ${{ github.event_name }}"
-          echo "head full name: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "base full name: ${{ github.event.pull_request.base.repo.full_name }}"
-          echo "head full name: ${{ github.head.repo.full_name }}"
-          echo "base full name: ${{ github.base.repo.full_name }}"
-          echo "github.ref: ${{  github.ref }}"
-          echo "this is in main branch"
-          
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: run
+      if: success()
+      run: 'echo "pull request event name: ${{ github.event_name }}"
+
+        echo "head full name: ${{ github.event.pull_request.head.repo.full_name }}"
+
+        echo "base full name: ${{ github.event.pull_request.base.repo.full_name }}"
+
+        echo "head full name: ${{ github.head.repo.full_name }}"
+
+        echo "base full name: ${{ github.base.repo.full_name }}"
+
+        echo "github.ref: ${{  github.ref }}"
+
+        echo "this is in main branch"
+
+        '
   job3:
     name: checkout HEAD
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: duplicate_runs
-    if: | 
-       needs.duplicate_runs.outputs.should_skip != 'true'
+    if: 'needs.duplicate_runs.outputs.should_skip != ''true''
+
+      '
     steps:
-      -
-        name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      -
-        name: run
-        if: success()
-        run: |
-          git checkout ${{ github.event.pull_request.head.sha }}
-          echo "pull request event name: ${{ github.event_name }}"
-          echo "head full name: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "base full name: ${{ github.event.pull_request.base.repo.full_name }}"
-          echo "head full name: ${{ github.head.repo.full_name }}"
-          echo "base full name: ${{ github.base.repo.full_name }}"
-          echo "github.ref: ${{  github.ref }}"
-          echo "this is in main branch"
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: run
+      if: success()
+      run: 'git checkout ${{ github.event.pull_request.head.sha }}
+
+        echo "pull request event name: ${{ github.event_name }}"
+
+        echo "head full name: ${{ github.event.pull_request.head.repo.full_name }}"
+
+        echo "base full name: ${{ github.event.pull_request.base.repo.full_name }}"
+
+        echo "head full name: ${{ github.head.repo.full_name }}"
+
+        echo "base full name: ${{ github.base.repo.full_name }}"
+
+        echo "github.ref: ${{  github.ref }}"
+
+        echo "this is in main branch"
+
+        '
