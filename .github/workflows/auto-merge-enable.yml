@@ -1,29 +1,28 @@
 name: auto-merge-enable
-on:
-  pull_request:
-  push:
-
-
+'on':
+  pull_request: null
+  push: null
 jobs:
   enable-am:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - name: find pr
-        uses: juliangruber/find-pull-request-action@v1
-        id: find-pull-request
-        with:
-          branch: 'auto-merge-enable'
-      - name: run
-        run: | 
-           echo "pr number ${{ steps.find-pull-request.outputs.number }}"
-      - name: Approve pr
-        uses: hmarr/auto-approve-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request-number: ${{ steps.find-pull-request.outputs.number }}
-      - name: Enable AutoMerge
-        uses: peter-evans/enable-pull-request-automerge@v1
-        with:
-          token: ${{ secrets.TAO_PTO }}
-          pull-request-number: ${{ steps.find-pull-request.outputs.number }}
-          merge-method: squash
+    - name: find pr
+      uses: juliangruber/find-pull-request-action@v1
+      id: find-pull-request
+      with:
+        branch: auto-merge-enable
+    - name: run
+      run: 'echo "pr number ${{ steps.find-pull-request.outputs.number }}"
+
+        '
+    - name: Approve pr
+      uses: hmarr/auto-approve-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        pull-request-number: ${{ steps.find-pull-request.outputs.number }}
+    - name: Enable AutoMerge
+      uses: peter-evans/enable-pull-request-automerge@v1
+      with:
+        token: ${{ secrets.TAO_PTO }}
+        pull-request-number: ${{ steps.find-pull-request.outputs.number }}
+        merge-method: squash
