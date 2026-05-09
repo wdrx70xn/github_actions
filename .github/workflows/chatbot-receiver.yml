@@ -1,54 +1,45 @@
 name: slash-command-receiver
-
-on:
+'on':
   repository_dispatch:
     types:
-      - test-command
+    - test-command
 jobs:
   test-receiver:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - name: display command params
-        run: |
-          echo "${{ github.event.client_payload.slash_command }}"
-          echo "${{ github.event.client_payload.slash_command.args.all }}"
-          echo "${{ github.event.client_payload.slash_command.args.unnamed.all }}"
-          echo "${{ github.event.client_payload.slash_command.args.named.level }}"
-          echo "${{ github.event.client_payload.slash_command.args.named.prod }}"
-          echo "${{ github.event.client_payload.slash_command.args.named.pr_number }}"
-      - name: get branch name
-        id: chaos
-        run: |
-          if [[ "${{ github.event.client_payload.pull_request.head.ref }}" != "" ]]
-          then
-            ref=${{ github.event.client_payload.pull_request.head.ref }}
-            echo ::set-output name=ref::$ref
-          fi
-      - name: Invoke workflow-dispatch
-        id: trigger-workflow
-        uses: aurelien-baudet/workflow-dispatch@v2
-        with:
-          workflow: continuous-delivery
-          token: ${{secrets.TAO_PTO}}
-          ref: ${{ steps.chaos.outputs.ref }}
-          display-workflow-run-url: true
-          wait-for-completion: false
-          inputs: > 
-             {"pr_number":"${{ github.event.client_payload.slash_command.args.named.pr 
-                    || github.event.client_payload.slash_command.args.named.pr_number }}",
-             "prod":"${{github.event.client_payload.slash_command.args.named.p 
-                    || github.event.client_payload.slash_command.args.named.prod}}",
-             "level":"${{ github.event.client_payload.slash_command.args.named.l 
-                    || github.event.client_payload.slash_command.args.named.test_level 
-                    || github.event.client_payload.slash_command.args.named.level }}"}
-      # - name: Invoke workflow-dispatch
-      #   id: trigger-workflow
-      #   uses: benc-uk/workflow-dispatch@v1
-      #   with:
-      #     workflow: continuous-delivery
-      #     token: ${{secrets.TAO_PTO}}
-      #     ref: ${{ steps.chaos.outputs.ref }}
-      #     display-workflow-run-url: true
-      #     wait-for-completion: false
-      #     inputs: '{"pr_number":"${{ github.event.client_payload.github.payload.issue.number }}","test2":"yes"}'
-      
+    - name: display command params
+      run: 'echo "${{ github.event.client_payload.slash_command }}"
+
+        echo "${{ github.event.client_payload.slash_command.args.all }}"
+
+        echo "${{ github.event.client_payload.slash_command.args.unnamed.all }}"
+
+        echo "${{ github.event.client_payload.slash_command.args.named.level }}"
+
+        echo "${{ github.event.client_payload.slash_command.args.named.prod }}"
+
+        echo "${{ github.event.client_payload.slash_command.args.named.pr_number }}"
+
+        '
+    - name: get branch name
+      id: chaos
+      run: "if [[ \"${{ github.event.client_payload.pull_request.head.ref }}\" !=\
+        \ \"\" ]]\nthen\n  ref=${{ github.event.client_payload.pull_request.head.ref\
+        \ }}\n  echo ::set-output name=ref::$ref\nfi\n"
+    - name: Invoke workflow-dispatch
+      id: trigger-workflow
+      uses: aurelien-baudet/workflow-dispatch@v2
+      with:
+        workflow: continuous-delivery
+        token: ${{secrets.TAO_PTO}}
+        ref: ${{ steps.chaos.outputs.ref }}
+        display-workflow-run-url: true
+        wait-for-completion: false
+        inputs: "{\"pr_number\":\"${{ github.event.client_payload.slash_command.args.named.pr\
+          \ \n       || github.event.client_payload.slash_command.args.named.pr_number\
+          \ }}\",\n\"prod\":\"${{github.event.client_payload.slash_command.args.named.p\
+          \ \n       || github.event.client_payload.slash_command.args.named.prod}}\"\
+          ,\n\"level\":\"${{ github.event.client_payload.slash_command.args.named.l\
+          \ \n       || github.event.client_payload.slash_command.args.named.test_level\
+          \ \n       || github.event.client_payload.slash_command.args.named.level\
+          \ }}\"}\n"
