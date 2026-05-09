@@ -1,74 +1,42 @@
 name: continuous-delivery
-
-on:
-  push:
-  pull_request:
+'on':
+  push: null
+  pull_request: null
   workflow_dispatch:
     inputs:
       pr_number:
-          description: pull request number referenced
-          required: false
+        description: pull request number referenced
+        required: false
       prod:
-          description: just for test
-          required: false
+        description: just for test
+        required: false
       level:
-          description: just for test2
-          required: false
-
-    
+        description: just for test2
+        required: false
 jobs:
   comments-and-label:
     name: comments
-    if: |
-      always() &&
-      (
-        github.event_name == 'pull_request' ||
-        github.event_name == 'workflow_dispatch'
-      )
-    runs-on: ubuntu-20.04
+    if: "always() &&\n(\n  github.event_name == 'pull_request' ||\n  github.event_name\
+      \ == 'workflow_dispatch'\n)\n"
+    runs-on: ubuntu-latest
     steps:
-      - name: display
-        run: | 
-           echo "pr_number: ${{github.event.inputs.pr_number}}"
-           echo "prod: ${{github.event.inputs.prod}}"
-           echo "level:  ${{github.event.inputs.level}}" 
-      - name: check test level
-        id: checkLevel
-        if: always()
-        run: |
-          echo "::set-output name=labelsToPR::e2e-run"
-          if [[ ${{ github.event_name }} == 'pull_request' ]];
-          then
-            echo "::set-output name=prNumber::${{github.event.number}}"
-          elif [[ ${{ github.event_name }} == 'workflow_dispatch' ]];
-          then
-            echo "::set-output name=prNumber::${{github.event.inputs.pr_number}}"
-          fi
-      - name: checkout
-        uses: actions/checkout@v2
-      # - name: unlabel
-      #   id: unlabel
-      #   if: always() &&
-      #         steps.checkLevel.outputs.prNumber != '' 
-      #   uses: actions-ecosystem/action-remove-labels@v1
-      #   with:
-      #     github_token: ${{secrets.TAO_PTO}}
-      #     number: ${{ steps.checkLevel.outputs.prNumber }}
-      #     labels: ${{ steps.checkLevel.outputs.labelsToPR}}
-      - name: add label
-        id: label
-        if: always() &&
-              steps.checkLevel.outputs.prNumber != '' 
-        uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{secrets.TAO_PTO}}
-          number: ${{ steps.checkLevel.outputs.prNumber }}
-          labels: ${{ steps.checkLevel.outputs.labelsToPR}}
-      # - name: Run the action 
-      #   uses: Sibz/github-status-action@v1
-      #   with: 
-      #     authToken: ${{secrets.TAO_PTO}}
-      #     context: 'Test run'
-      #     description: 'Passed'
-      #     state: 'success'
-      #     sha: ${{github.event.pull_request.head.sha || github.sha}}
+    - name: display
+      run: "echo \"pr_number: ${{github.event.inputs.pr_number}}\"\necho \"prod: ${{github.event.inputs.prod}}\"\
+        \necho \"level:  ${{github.event.inputs.level}}\" \n"
+    - name: check test level
+      id: checkLevel
+      if: always()
+      run: "echo \"::set-output name=labelsToPR::e2e-run\"\nif [[ ${{ github.event_name\
+        \ }} == 'pull_request' ]];\nthen\n  echo \"::set-output name=prNumber::${{github.event.number}}\"\
+        \nelif [[ ${{ github.event_name }} == 'workflow_dispatch' ]];\nthen\n  echo\
+        \ \"::set-output name=prNumber::${{github.event.inputs.pr_number}}\"\nfi\n"
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: add label
+      id: label
+      if: always() && steps.checkLevel.outputs.prNumber != ''
+      uses: actions-ecosystem/action-add-labels@v1
+      with:
+        github_token: ${{secrets.TAO_PTO}}
+        number: ${{ steps.checkLevel.outputs.prNumber }}
+        labels: ${{ steps.checkLevel.outputs.labelsToPR}}
